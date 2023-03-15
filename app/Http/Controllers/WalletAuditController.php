@@ -24,7 +24,9 @@ class WalletAuditController extends Controller
         foreach($modifiedRecords as $value){
             foreach($value as $key => $val ){
                 $model = WalletAudit::where('delete_flg',0)->where('id',$value['id'])->first();
-                $model->$key = $val;
+                if($key!='total_behoof'){
+                    $model->$key = $val;
+                }
                 $saved = $model->save();
             }
         }
@@ -32,7 +34,7 @@ class WalletAuditController extends Controller
         foreach($newRecords as $value){
             $model = new WalletAudit;
             foreach($value as $key => $val ){
-                $columns = ['id','delete_flg','is_draft'];
+                $columns = ['id','delete_flg','is_draft','total_behoof'];
                 if(!in_array($key, $columns)){
                     $model->$key = $val;
                     $saved = $model->save();
@@ -105,8 +107,10 @@ class WalletAuditController extends Controller
         }
 
          //for total records without pagination/limit
-        $total_wr = DB::select('select sum(withdraw_amount) as total_wr from wallet_audits '.$sql_where.'');
-        $total_wr = WalletAudit::where('delete_flg',0)->sum('withdraw_amount');
+        // $total_wr = DB::select('select sum(withdraw_amount) as total_wr from wallet_audits '.$sql_where.'');
+        $total_wr = WalletAudit::where('delete_flg',0)->where('date',$req->date)->sum('withdraw_amount');
+        $total_wc = WalletAudit::where('delete_flg',0)->where('date',$req->date)->sum('closing_balance');
+
        
 
         //check delete_flg
@@ -121,17 +125,60 @@ class WalletAuditController extends Controller
             if($req->for_notification){
                 // $sql_where.= ' LIMIT 3 ';
             }
-            $results = DB::select('select * from wallet_audits '.$sql_where);
+            $results = DB::select('select *, closing_balance - opening_balance + withdraw_amount as total_behoof from wallet_audits '.$sql_where);
             // $results = DB::select('select * from transactions '.$sql_where.' ORDER BY ID DESC');
             
         }else{
             $results = WalletAudit::where('delete_flg',0)->orderBy('id', 'desc')->get();
         }
 
+
         return response()->json([
             'success' => true,
             'data' => $results,
-            'total_wr'=> $total_wr
+            'total_wr'=> $total_wr,
+            'total_wc'=> $total_wc
+        ]);
+    }
+
+    public function behoofRecordList(Request $req){
+
+        $sql_where = '';
+
+        //query params
+        if($req->date){
+            $date = "'".$req->date."'";
+            $sql_where.= " WHERE date = ".$date;
+        }
+
+
+        //check delete_flg
+        if($sql_where == ''){
+            $sql_where.='  WHERE delete_flg = 0 GROUP by date ';
+        }else{
+            $sql_where.=' AND delete_flg = 0 GROUP by date ';
+        }
+        
+        if($sql_where !=''){
+            $sql_where.= ' ORDER BY date DESC ';
+            if($req->for_notification){
+                // $sql_where.= ' LIMIT 3 ';
+            }
+            $results = DB::select('SELECT date,
+            COALESCE(sum( opening_balance ),0) AS opening_balance,
+            COALESCE(sum( closing_balance ),0) AS closing_balance,
+            COALESCE(sum( withdraw_amount ),0) AS withdraw_amount ,
+            COALESCE(sum(closing_balance) - sum(opening_balance) + sum(withdraw_amount),0) as total_behoof FROM  wallet_audits  '.$sql_where);
+            // $results = DB::select('select * from transactions '.$sql_where.' ORDER BY ID DESC');
+            
+        }else{
+            $results = WalletAudit::where('delete_flg',0)->orderBy('id', 'desc')->get();
+        }
+
+
+        return response()->json([
+            'success' => true,
+            'data' => $results,
         ]);
     }
 

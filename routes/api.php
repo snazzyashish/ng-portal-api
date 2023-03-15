@@ -128,6 +128,10 @@ Route::get('/wallet-audit/list', [WalletAuditController::class, 'list']);
 Route::post('/wallet-audit/save', [WalletAuditController::class, 'save']);
 Route::post('/wallet-audit/delete', [WalletAuditController::class, 'delete']);
 
+Route::get('/behoof-record/list', [WalletAuditController::class, 'behoofRecordList']);
+// Route::post('/behoof-record/save', [WalletAuditController::class, 'save']);
+// Route::post('/behoof-record/delete', [WalletAuditController::class, 'delete']);
+
 
 
 Route::get('/session/set', [UserController::class, 'setSession']);
