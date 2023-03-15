@@ -20,6 +20,7 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\StoreBalanceController; 
 use App\Http\Controllers\AnnouncementController; 
 use App\Http\Controllers\GamePointsController; 
+use App\Http\Controllers\WalletAuditController; 
 
  
 
@@ -74,7 +75,7 @@ Route::post('/schedule/save', [ScheduleController::class, 'save']);
 Route::post('/schedule/delete', [ScheduleController::class, 'delete']);
 
 Route::get('/file/list', [FileController::class, 'list']);
-Route::post('/file/save', [FileController::class, 'uploadFile']);
+Route::post('/file/upload', [FileController::class, 'uploadFile']);
 Route::post('/file/delete', [FileController::class, 'delete']);
 
 
@@ -122,6 +123,10 @@ Route::post('/announcement/update-seen', [AnnouncementController::class, 'update
 Route::get('/game-point/list', [GamePointsController::class, 'list']);
 Route::post('/game-point/save', [GamePointsController::class, 'save']);
 Route::post('/game-point/delete', [GamePointsController::class, 'delete']);
+
+Route::get('/wallet-audit/list', [WalletAuditController::class, 'list']);
+Route::post('/wallet-audit/save', [WalletAuditController::class, 'save']);
+Route::post('/wallet-audit/delete', [WalletAuditController::class, 'delete']);
 
 
 

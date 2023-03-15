@@ -17,42 +17,40 @@ class GamePointsController extends Controller
     }
 
     public function save(Request $req){
-        $date = date('Y-m-d h:i:s');
+        $modifiedRecords = $req->modifiedRecords;
+        $newRecords = $req->newRecords;
+        $saved = null;
 
-        if($req->input('id')){ //edit mode
-            $model = GamePoint::where('delete_flg',0)->where('id',$req->input('id'))->first();
-            $model->updated_by = $req->user_id;
-            $model->updated_at = $date;
-
-        }else{
-            $model = new GamePoint;
-            $model->created_by = $req->user_id;
-            $model->created_at = $date;
+        foreach($modifiedRecords as $value){
+            foreach($value as $key => $val ){
+                $model = GamePoint::where('delete_flg',0)->where('id',$value['id'])->first();
+                $model->$key = $val;
+                $saved = $model->save();
+            }
         }
 
-        $model->title = $req->title;
-        $model->body = $req->body;
-        $model->status = $req->status;
-        $model->group_ids = $req->group_ids;
-        $model->groups = $req->groups;
-        $model->seen = 0;
+        foreach($newRecords as $value){
+            $model = new GamePoint;
+            foreach($value as $key => $val ){
+                $columns = ['id','delete_flg','is_draft'];
+                if(!in_array($key, $columns)){
+                    $model->$key = $val;
+                    $saved = $model->save();
+                }
+            }
+        }
 
-        
         $resp = [
             'success' => false,
             'message' => 'Save failed'
         ];
-        
-        if($model->save()){
-           $resp['success'] = true;
-           $resp['message'] = 'Announcement Saved';
-           
-        }else{
 
+        if($saved){
+            return response()->json([
+                'success' => true,
+                'message' => 'Saved success',
+            ]);
         }
-
-        return response()->json($resp);
-
     }
     
 
@@ -101,7 +99,7 @@ class GamePointsController extends Controller
 
         //for total records without pagination/limit
         if($sql_where!=''){
-            $totalRecords = sizeOf(DB::select('select * from gamepoints '.$sql_where.''));
+            $totalRecords = sizeOf(DB::select('select * from game_points '.$sql_where.''));
         }else{
             $totalRecords = GamePoint::where('delete_flg',0)->orderBy('id', 'desc')->count();
         }
@@ -119,7 +117,7 @@ class GamePointsController extends Controller
             if($req->for_notification){
                 // $sql_where.= ' LIMIT 3 ';
             }
-            $results = DB::select('select * from gamepoints '.$sql_where);
+            $results = DB::select('select * from game_points '.$sql_where);
             // $results = DB::select('select * from transactions '.$sql_where.' ORDER BY ID DESC');
             
         }else{
@@ -133,23 +131,27 @@ class GamePointsController extends Controller
     }
 
     public function delete(Request $req){
-        $model = GamePoint::where('delete_flg',0)->where('id',$req->id)->first();
-        if(!$model){
-            return response()->json([
-                'success' => false,
-                'message'=> 'Failed'
-            ]);
+        $deletedRecords = $req->deletedRecords;
+        $saved = null;
+
+        $resp = [
+            'success' => false,
+            'message' => 'Save failed'
+        ];
+
+        foreach($deletedRecords as $value){
+            $model = GamePoint::where('delete_flg',0)->where('id',$value)->first();
+            $model->delete_flg = 1;
+            $saved = $model->save();
         }
-        $model->delete_flg = 1;
-        if($model->save()){
+    
+        if($saved){
             return response()->json([
                 'success' => true,
-                'message'=> 'Success'
+                'message' => 'Saved success',
             ]);
         }
-
     }
-
 
 
     public function refresh(){
