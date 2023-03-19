@@ -67,7 +67,7 @@ class DashboardController extends Controller
 
     public function list(Request $req){
         $today = date('Y-m-d');
-        $userModel = User::where('delete_flg',0)->where('id',$this->user_info->id)->first();
+        $userModel = User::where('delete_flg',0)->where('id',$req->user_id)->first();
 
         $totalTransactions = Transaction::where('delete_flg',0)->count();
         $totalGroups = Group::where('delete_flg',0)->count();
@@ -89,16 +89,16 @@ class DashboardController extends Controller
 
         if($req->filter){
             $sql_where = '';
-            if($this->user_info->user_role !='1'){
-                $sql_where .=" AND group_id = {$this->user_info->group_id} ";
+            if($userModel->user_role !='1'){
+                $sql_where .=" AND group_id = {$userModel->group_id} ";
             }
             if($req->filter == 'month'){
                 $currentMonth = date('m');
                 $totalIn = Transaction::where('delete_flg',0)->where('type','IN')->whereRaw('MONTH(date) = ?',[$currentMonth])->sum('c_in');
                 $totalOut = Transaction::where('delete_flg',0)->where('type','OUT')->whereRaw('MONTH(date) = ?',[$currentMonth])->sum('c_out');
-                if($this->user_info->user_role !='1'){
-                    $totalIn = Transaction::where('delete_flg',0)->where('group_id',$this->user_info->group_id)->where('type','IN')->whereRaw('MONTH(date) = ?',[$currentMonth])->sum('c_in');
-                    $totalOut = Transaction::where('delete_flg',0)->where('group_id',$this->user_info->group_id)->where('type','OUT')->whereRaw('MONTH(date) = ?',[$currentMonth])->sum('c_out');
+                if($userModel->user_role !='1'){
+                    $totalIn = Transaction::where('delete_flg',0)->where('group_id',$userModel->group_id)->where('type','IN')->whereRaw('MONTH(date) = ?',[$currentMonth])->sum('c_in');
+                    $totalOut = Transaction::where('delete_flg',0)->where('group_id',$userModel->group_id)->where('type','OUT')->whereRaw('MONTH(date) = ?',[$currentMonth])->sum('c_out');
                 }
 
                 $lineChartData = [
@@ -170,10 +170,10 @@ class DashboardController extends Controller
                 $totalOut = Transaction::where('delete_flg',0)->where('type','OUT')->whereBetween('date', 
                 [Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()])->sum('c_out');
 
-                if($this->user_info->user_role !='1'){
-                    $totalIn = Transaction::where('delete_flg',0)->where('group_id',$this->user_info->group_id)->where('type','IN')->whereBetween('date', 
+                if($userModel->user_role !='1'){
+                    $totalIn = Transaction::where('delete_flg',0)->where('group_id',$userModel->group_id)->where('type','IN')->whereBetween('date', 
                     [Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()])->sum('c_in');
-                    $totalOut = Transaction::where('delete_flg',0)->where('group_id',$this->user_info->group_id)->where('type','OUT')->whereBetween('date', 
+                    $totalOut = Transaction::where('delete_flg',0)->where('group_id',$userModel->group_id)->where('type','OUT')->whereBetween('date', 
                     [Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()])->sum('c_out');
                 }
 
@@ -245,10 +245,10 @@ class DashboardController extends Controller
                 $totalIn = Transaction::where('delete_flg',0)->where('type','IN')->where('date',$today)->sum('c_in');
                 $totalOut = Transaction::where('delete_flg',0)->where('type','OUT')->where('date',$today)->sum('c_out');
                 
-                if($this->user_info->user_role !='1'){
-                    $totalIn = Transaction::where('delete_flg',0)->where('type','IN')->where('group_id',$this->user_info->group_id)->where('date',$today)->sum('c_in');
-                    $totalOut = Transaction::where('delete_flg',0)->where('type','OUT')->where('group_id',$this->user_info->group_id)->where('date',$today)->sum('c_out');
-                    $sql_where .=" AND group_id = {$this->user_info->group_id} ";
+                if($userModel->user_role !='1'){
+                    $totalIn = Transaction::where('delete_flg',0)->where('type','IN')->where('group_id',$userModel->group_id)->where('date',$today)->sum('c_in');
+                    $totalOut = Transaction::where('delete_flg',0)->where('type','OUT')->where('group_id',$userModel->group_id)->where('date',$today)->sum('c_out');
+                    $sql_where .=" AND group_id = {$userModel->group_id} ";
                 }
 
                 $lineChartData = [
@@ -261,9 +261,9 @@ class DashboardController extends Controller
                 $currentYear = date('Y');
                 $totalIn = Transaction::where('delete_flg',0)->where('type','IN')->whereRaw('YEAR(date) = ?',[$currentYear])->sum('c_in');
                 $totalOut = Transaction::where('delete_flg',0)->where('type','OUT')->whereRaw('YEAR(date) = ?',[$currentYear])->sum('c_out');
-                if($this->user_info->user_role !='1'){
-                    $totalIn = Transaction::where('delete_flg',0)->where('group_id',$this->user_info->group_id)->where('type','IN')->whereRaw('YEAR(date) = ?',[$currentYear])->sum('c_in');
-                    $totalOut = Transaction::where('delete_flg',0)->where('group_id',$this->user_info->group_id)->where('type','OUT')->whereRaw('YEAR(date) = ?',[$currentYear])->sum('c_out');
+                if($userModel->user_role !='1'){
+                    $totalIn = Transaction::where('delete_flg',0)->where('group_id',$userModel->group_id)->where('type','IN')->whereRaw('YEAR(date) = ?',[$currentYear])->sum('c_in');
+                    $totalOut = Transaction::where('delete_flg',0)->where('group_id',$userModel->group_id)->where('type','OUT')->whereRaw('YEAR(date) = ?',[$currentYear])->sum('c_out');
                 }
 
                 $lineChartData = [

@@ -21,6 +21,7 @@ use App\Http\Controllers\StoreBalanceController;
 use App\Http\Controllers\AnnouncementController; 
 use App\Http\Controllers\GamePointsController; 
 use App\Http\Controllers\WalletAuditController; 
+use App\Http\Controllers\GameBalanceController; 
 
  
 
@@ -132,6 +133,10 @@ Route::get('/behoof-record/list', [WalletAuditController::class, 'behoofRecordLi
 // Route::post('/behoof-record/save', [WalletAuditController::class, 'save']);
 // Route::post('/behoof-record/delete', [WalletAuditController::class, 'delete']);
 
+Route::get('/game-balance/list', [GameBalanceController::class, 'list']);
+Route::get('/prev-game-balance/list', [GameBalanceController::class, 'listPrev']);
+Route::post('/game-balance/save', [GameBalanceController::class, 'save']);
+Route::post('/game-balance/delete', [GameBalanceController::class, 'delete']);
 
 
 Route::get('/session/set', [UserController::class, 'setSession']);
