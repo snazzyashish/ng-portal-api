@@ -22,6 +22,7 @@ use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\GamePointsController; 
 use App\Http\Controllers\WalletAuditController; 
 use App\Http\Controllers\GameBalanceController; 
+use App\Http\Controllers\GameRechargeController; 
 
  
 
@@ -137,6 +138,10 @@ Route::get('/game-balance/list', [GameBalanceController::class, 'list']);
 Route::get('/prev-game-balance/list', [GameBalanceController::class, 'listPrev']);
 Route::post('/game-balance/save', [GameBalanceController::class, 'save']);
 Route::post('/game-balance/delete', [GameBalanceController::class, 'delete']);
+
+Route::get('/game-recharge/list', [GameRechargeController::class, 'list']);
+Route::post('/game-recharge/save', [GameRechargeController::class, 'save']);
+Route::post('/game-recharge/delete', [GameRechargeController::class, 'delete']);
 
 
 Route::get('/session/set', [UserController::class, 'setSession']);
