@@ -18,6 +18,68 @@ class GameRechargeController extends Controller
         // $this->middleware('auth:api', ['except' => ['login','get-users']]);
     }
 
+    // public function save(Request $req){
+    //     $modifiedRecords = $req->modifiedRecords;
+    //     $newRecords = $req->newRecords;
+    //     $saved = null;
+
+    //     foreach($modifiedRecords as $value){
+    //         $model = GameRecharge::where('delete_flg',0)->where('id',$value['id'])->first();
+    //         foreach($value as $key => $val ){
+    //             $columns = ['id','delete_flg','is_draft','modified'];
+    //             if(!in_array($key, $columns)){
+    //                 $model->$key = $val;
+    //                 $saved = $model->save();
+    //             }
+    //         }
+    //     }
+
+    //     foreach($newRecords as $value){
+    //         $model = new GameRecharge;
+    //         foreach($value as $key => $val ){
+    //             $columns = ['id','delete_flg','is_draft','modified'];
+    //             if(!in_array($key, $columns)){
+    //                 $model->$key = $val;
+    //                 $saved = $model->save();
+    //             }
+    //         }
+    //     }
+
+    //     $store = $model->store;
+    //     $game_balance_model = GameBalance::where('delete_flg',0)->where('store',$store)->orderBy('date', 'desc')->first();
+    //     $game_balance_result = DB::select("
+    //         SELECT
+    //             * 
+    //         FROM
+    //             game_balances
+    //         WHERE store = '{$store}'
+    //         ORDER BY date DESC LIMIT 2
+    //     "
+    //     );
+
+
+    //     if(count($game_balance_result) >=2){
+    //         $recharged_balance = $model->balance;
+    //         $today_ending_balance = $game_balance_result[0]->today_ending_balance;
+    //         $yesterday_ending_balance = $game_balance_result[1]->today_ending_balance;
+    //         $total_income = $yesterday_ending_balance - $today_ending_balance + $recharged_balance;
+    //         $game_balance_model->total_income = $total_income;
+    //         $game_balance_model->save();
+    //     }
+
+    //     $resp = [
+    //         'success' => false,
+    //         'message' => 'Save failed'
+    //     ];
+
+    //     if($saved){
+    //         return response()->json([
+    //             'success' => true,
+    //             'message' => 'Saved success',
+    //         ]);
+    //     }
+    // }
+
     public function save(Request $req){
         $modifiedRecords = $req->modifiedRecords;
         $newRecords = $req->newRecords;
@@ -37,7 +99,7 @@ class GameRechargeController extends Controller
         foreach($newRecords as $value){
             $model = new GameRecharge;
             foreach($value as $key => $val ){
-                $columns = ['id','delete_flg','is_draft'];
+                $columns = ['id','delete_flg','is_draft','modified'];
                 if(!in_array($key, $columns)){
                     $model->$key = $val;
                     $saved = $model->save();
@@ -46,25 +108,13 @@ class GameRechargeController extends Controller
         }
 
         $store = $model->store;
-        $game_balance_model = GameBalance::where('delete_flg',0)->where('store',$store)->orderBy('date', 'desc')->first();
-        $game_balance_result = DB::select("
-            SELECT
-                * 
-            FROM
-                game_balances
-            WHERE store = '{$store}'
-            ORDER BY date DESC LIMIT 2
-        "
-        );
-
-
-        if(count($game_balance_result) >=2){
-            $recharged_balance = $model->balance;
-            $today_ending_balance = $game_balance_result[0]->today_ending_balance;
-            $yesterday_ending_balance = $game_balance_result[1]->today_ending_balance;
-            $total_income = $yesterday_ending_balance - $today_ending_balance + $recharged_balance;
-            $game_balance_model->total_income = $total_income;
+        $recharged_balance = $model->balance;
+        $date = $req->date;
+        $game_balance_model = GameBalance::where('delete_flg',0)->where('store',$store)->where('date',$date)->first();
+        if($game_balance_model){
+            $game_balance_model->recharged = $recharged_balance;
             $game_balance_model->save();
+
         }
 
         $resp = [

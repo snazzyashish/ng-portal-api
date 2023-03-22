@@ -53,9 +53,25 @@ class GameBalanceController extends Controller
             ]);
         }
     }
+
+    public function updatePrevEndingBalance($req){
+        $today = date('Y-m-d');
+        $prev_date = Carbon::createFromFormat('Y-m-d', $req->date)->subDays()->toDateString();
+        $yesterday = Carbon::yesterday()->toDateString();
+        DB::update("
+            UPDATE game_balances t,
+            ( SELECT DISTINCT store,today_ending_balance FROM game_balances WHERE date =  '{$yesterday}') t1 
+            SET t.prev_ending_balance = t1.today_ending_balance , t.total_income = (t.prev_ending_balance - t.today_ending_balance)
+            WHERE
+            t.store = t1.store
+            AND t.date = '{$req->date}'
+        "
+        );
+    }
     
 
     public function list(Request $req){
+        $this->updatePrevEndingBalance($req);
         $sql_where = '';
         $today = date('Y-m-d');
         $prev_date = Carbon::createFromFormat('Y-m-d', $req->date)->subDays()->toDateString();
@@ -122,15 +138,15 @@ class GameBalanceController extends Controller
             $results = DB::select("
                 SELECT
                 * ,
-                IFNULL((total_income),0) as total_income
+                (COALESCE(prev_ending_balance,0) - COALESCE(today_ending_balance,0) + COALESCE(recharged,0)) as total_income
                 FROM
                     `game_balances` 
-                WHERE
-                date = '{$req->date}' 
-                AND delete_flg = 0
+                {$sql_where}
                 ORDER BY ID DESC
             "
             );
+
+
             // $results = DB::select('select * from game_balances '.$sql_where);
             // $results = DB::select('select * from transactions '.$sql_where.' ORDER BY ID DESC');
             

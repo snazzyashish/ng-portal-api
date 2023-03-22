@@ -1,4 +1,5 @@
 <?php
+ //for DEVELOPEMENT MODE
  
 namespace App\Http\Controllers;
  
