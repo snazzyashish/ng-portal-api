@@ -146,6 +146,15 @@ class GameBalanceController extends Controller
             "
             );
 
+            $total_income = DB::select("
+                SELECT
+                SUM((COALESCE(prev_ending_balance,0) - COALESCE(today_ending_balance,0) + COALESCE(recharged,0))) as total_income
+                FROM
+                    `game_balances` 
+                {$sql_where}
+            "
+        );
+
 
             // $results = DB::select('select * from game_balances '.$sql_where);
             // $results = DB::select('select * from transactions '.$sql_where.' ORDER BY ID DESC');
@@ -157,6 +166,7 @@ class GameBalanceController extends Controller
         return response()->json([
             'success' => true,
             'data' => $results,
+            'total_income' => $total_income
         ]);
     }
 

@@ -181,6 +181,8 @@ class GameRechargeController extends Controller
             $sql_where.=' AND delete_flg = 0 ';
         }
 
+        $total_recharged = 0;
+
         
         if($sql_where !=''){
             // $sql_where.= ' ORDER BY t1.ID DESC ';
@@ -189,14 +191,17 @@ class GameRechargeController extends Controller
             }
             // $results = DB::select('select * from game_balances '.$sql_where);
             $results = DB::select('select * from game_recharges '.$sql_where.' ORDER BY ID DESC');
+            $total_recharged = DB::select('select SUM(balance) as total_recharged from game_recharges '.$sql_where);
             
         }else{
             $results = GameRecharge::where('delete_flg',0)->orderBy('id', 'desc')->get();
+            $total_recharged = DB::select('select SUM(balance) as total_recharged from game_recharges '.$sql_where);
         }
 
         return response()->json([
             'success' => true,
             'data' => $results,
+            'total_recharged' => $total_recharged
         ]);
     }
 

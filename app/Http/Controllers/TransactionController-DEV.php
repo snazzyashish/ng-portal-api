@@ -171,7 +171,7 @@ class TransactionController extends Controller
                 }else{
                     $sql_where.= " WHERE";
                 }
-                $sql_where.= ' group_id = '.$req->group_id;
+                $sql_where.= ' group_id = '.$userModel->group_id;
             }
         }else{ //for superadmin
             if($req->group_id){
@@ -180,7 +180,7 @@ class TransactionController extends Controller
                 }else{
                     $sql_where.= " WHERE";
                 }
-                $sql_where.= ' group_id = '.$req->group_id;
+                $sql_where.= ' group_id = '.$userModel->group_id;
             }
         }
 
@@ -202,7 +202,7 @@ class TransactionController extends Controller
                 }else{
                     $sql_where.= " WHERE";
                 }
-                $sql_where.= ' group_id = '.$req->group_id;
+                $sql_where.= ' group_id = '.$userModel->group_id;
             }
         }
 

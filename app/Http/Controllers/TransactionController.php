@@ -1,5 +1,5 @@
 <?php
- 
+ //FOR LIVE MODE
 namespace App\Http\Controllers;
  
 use App\Models\Transaction;
