@@ -1,6 +1,5 @@
 <?php
- //for DEVELOPEMENT MODE
- 
+ //FOR LIVE MODE
 namespace App\Http\Controllers;
  
 use App\Models\Transaction;
@@ -41,7 +40,7 @@ class TransactionController extends Controller
                     $model->game_username = strtolower($val);
                 }
                 $model->updated_at = $date;
-                // $model->updated_by = $req->user_id;
+                // $model->updated_by = $this->user_info->id;
                 $model->is_draft = 0;
                 if($key == 'date'){
                     $date = date($val);
@@ -65,7 +64,7 @@ class TransactionController extends Controller
                         $model->game_username = strtolower($val);
                     }
                     $model->created_at = $date;
-                    // $model->created_by = $req->user_id;
+                    // $model->created_by = $this->user_info->id;
                     $model->is_draft = 0;
                     $model->delete_flg = 0;
                     if($key == 'date'){
@@ -151,7 +150,6 @@ class TransactionController extends Controller
         $offset = 0;
 
         $sql_where = '';
-        $userModel = User::where('delete_flg',0)->where('id',$req->user_id)->first();
 
         //query params
        
@@ -164,14 +162,14 @@ class TransactionController extends Controller
             $sql_where.= " WHERE date = ".$date;
         }
 
-        if($userModel->user_role != '1'){ //for admin and user
-            if($req->group_id){
+        if($this->user_info->user_role != '1'){ //for admin and user
+            if($this->user_info->group_id){
                 if($sql_where != ''){
                     $sql_where.= " AND";
                 }else{
                     $sql_where.= " WHERE";
                 }
-                $sql_where.= ' group_id = '.$userModel->group_id;
+                $sql_where.= ' group_id = '.$this->user_info->group_id;
             }
         }else{ //for superadmin
             if($req->group_id){
@@ -180,7 +178,7 @@ class TransactionController extends Controller
                 }else{
                     $sql_where.= " WHERE";
                 }
-                $sql_where.= ' group_id = '.$userModel->group_id;
+                $sql_where.= ' group_id = '.$req->group_id;
             }
         }
 
@@ -194,15 +192,15 @@ class TransactionController extends Controller
             $sql_where.= ' type = '.$type;
         }
         
-        $userModel = User::where('delete_flg',0)->where('id',$req->user_id)->first();
-        if($req->user_id != 1){
-            if($req->user_id){
+        $userModel = User::where('delete_flg',0)->where('id',$this->user_info->id)->first();
+        if($this->user_info->id != 1){
+            if($this->user_info->id){
                 if($sql_where != ''){
                     $sql_where.= " AND";
                 }else{
                     $sql_where.= " WHERE";
                 }
-                $sql_where.= ' group_id = '.$userModel->group_id;
+                $sql_where.= ' group_id = '.$this->user_info->group_id;
             }
         }
 
@@ -273,8 +271,8 @@ class TransactionController extends Controller
         if($req->filter){
             if($req->filter == 'latest'){
                 $transactions = Transaction::where('delete_flg',0)->orderBy('id','desc')->take(10)->get();
-                if($userModel->user_role !='1'){
-                    $transactions = Transaction::where('delete_flg',0)->where('group_id',$req->group_id)->orderBy('id','desc')->take(10)->get();
+                if($this->user_info->user_role !='1'){
+                    $transactions = Transaction::where('delete_flg',0)->where('group_id',$this->user_info->group_id)->orderBy('id','desc')->take(10)->get();
                 }
             }
         }
@@ -305,7 +303,7 @@ class TransactionController extends Controller
             $model = Transaction::where('delete_flg',0)->where('id',$value)->first();
             $model->delete_flg = 1;
             $model->deleted_at = $date;
-            $model->deleted_by = $req->user_id;
+            $model->deleted_by = $this->user_info->id;
             $saved = $model->save();
         }
         foreach($permanentDeletedRecords as $value){
@@ -364,7 +362,7 @@ class TransactionController extends Controller
             $model = Transaction::where('delete_flg',1)->where('id',$value)->first();
             $model->delete_flg = 0;
             // $model->deleted_at = $date;
-            // $model->deleted_by = $req->user_id;
+            // $model->deleted_by = $this->user_info->id;
             $saved = $model->save();
         }
     
@@ -382,24 +380,24 @@ class TransactionController extends Controller
         if($req->filter){
             if($req->filter == 'month'){
                 $currentMonth = date('m');
-                if($req->group_id){
-                    $sql_where = " AND group_id IN({$req->group_id}) ";
+                if($this->user_info->group_id){
+                    $sql_where = " AND group_id IN({$this->user_info->group_id}) ";
                 }
 
                 $records = DB::select("select IFNULL(sum(c_in),0) as c_in, IFNULL(sum(c_out),0) as c_out,	IFNULL(sum(c_in),0)-IFNULL(sum(c_out),0) as behoof, group_name  from transactions WHERE MONTH(date) = {$currentMonth} AND delete_flg=0 AND is_draft=0 {$sql_where} GROUP BY  group_name");
                 
                 
             }else if($req->filter == 'week'){
-                if($req->group_id){
-                    $sql_where = " AND group_id IN({$req->group_id}) ";
+                if($this->user_info->group_id){
+                    $sql_where = " AND group_id IN({$this->user_info->group_id}) ";
                 }
                 $totalIn = Transaction::where('delete_flg',0)->where('type','IN')->whereBetween('date', 
                 [Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()])->sum('c_in');
                 $records = DB::select("select IFNULL(sum(c_in),0) as c_in, IFNULL(sum(c_out),0) as c_out,	IFNULL(sum(c_in),0)-IFNULL(sum(c_out),0) as behoof, group_name  from transactions WHERE delete_flg=0 AND is_draft=0 {$sql_where} AND date BETWEEN '".Carbon::now()->startOfWeek()."' AND '".Carbon::now()->endOfWeek()."'  GROUP BY group_name");
 
             }else if($req->filter == 'today'){
-                if($req->group_id){
-                    $sql_where = " AND group_id IN({$req->group_id}) ";
+                if($this->user_info->group_id){
+                    $sql_where = " AND group_id IN({$this->user_info->group_id}) ";
                 }
                 // $records = DB::select('select IFNULL(sum(c_in),0) as c_in, IFNULL(sum(c_out),0) as c_out,	IFNULL(sum(c_in),0)-IFNULL(sum(c_out),0) as behoof, group_name  from transactions WHERE delete_flg=0 AND is_draft=0 AND date = "'.$today.'"  GROUP BY date, group_name');
 
@@ -419,30 +417,44 @@ class TransactionController extends Controller
 
     public function getPlayerNames(Request $req){
         $sql_where = "";
-        if($req->group_id){
-            $sql_where.= " group_id = ".$req->group_id." AND ";
+        $column_name;
+        if($this->user_info->group_id){
+            $sql_where.= " group_id = ".$this->user_info->group_id." AND ";
         }
-        $records = DB::select("
-                        SELECT
-                            player_name, game_username, tag, facebook_url
-                        FROM
-                        `transactions`
-                        WHERE {$sql_where}
-                        delete_flg = 0 AND (
-                            (player_name IS NOT NULL AND player_name != '') OR
-                            (game_username IS NOT NULL AND game_username != '') OR
-                            (tag IS NOT NULL AND tag != '')
-                        )
-                        GROUP BY player_name,game_username, tag, facebook_url
-        ");
+        if($req->column){
+            $column_name = $req->column;
+            $records = DB::select("
+                            SELECT
+                                {$column_name} , facebook_url 
+                            FROM
+                            `transactions`
+                            WHERE {$sql_where}
+                            delete_flg = 0 AND (
+                                ({$column_name} IS NOT NULL AND {$column_name} != '')
+                            )
+                            GROUP BY {$column_name}, facebook_url
+            ");
+        }else{
+            $records = DB::select("
+                SELECT
+                    player_name, game_username, tag, facebook_url
+                FROM
+                `transactions`
+                WHERE {$sql_where}
+                delete_flg = 0 AND (
+                    (player_name IS NOT NULL AND player_name != '') OR
+                    (game_username IS NOT NULL AND game_username != '') OR
+                    (tag IS NOT NULL AND tag != '')
+                )
+                GROUP BY player_name,game_username, tag, facebook_url
+            ");
+        }
 
         return response()->json([
             'success' => true,
             'data' => $records,
         ]);
     }
-
-
 
     public function refresh(){
         return $this->respondWithToken(auth()->refresh());

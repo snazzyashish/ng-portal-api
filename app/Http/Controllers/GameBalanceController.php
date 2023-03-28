@@ -215,8 +215,10 @@ class GameBalanceController extends Controller
         //check delete_flg
         if($sql_where == ''){
             $sql_where.="  WHERE delete_flg = 0 AND date = "."'".$req->date."'";
+            // $sql_where.="  WHERE delete_flg = 0 AND date <= "."'".$req->date."'";
         }else{
             $sql_where.=" AND delete_flg = 0 AND date = "."'".$req->date."'";
+            // $sql_where.=" AND delete_flg = 0 AND date <= "."'".$req->date."'";
         }
 
         

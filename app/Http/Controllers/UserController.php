@@ -277,6 +277,8 @@ class UserController extends Controller
         $offset = 0;
 
         $sql_where = '';
+        $userModel = User::where('delete_flg',0)->where('id',$req->user_id)->first();
+
 
         //query params
        
@@ -289,13 +291,13 @@ class UserController extends Controller
             $sql_where.= ' user_role = '.$req->userRole;
         }
 
-        if($this->user_info->group_id){
+        if($userModel->group_id){
             if($sql_where != ''){
                 $sql_where.= " AND";
             }else{
                 $sql_where.= " WHERE";
             }
-            $sql_where.= ' group_id = '.$this->user_info->group_id;
+            $sql_where.= ' group_id = '.$userModel->group_id;
         }
 
         //for total records without pagination/limit
