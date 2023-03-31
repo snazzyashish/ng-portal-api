@@ -110,11 +110,11 @@ class GameRechargeController extends Controller
         $store = $model->store;
         $recharged_balance = $model->balance;
         $date = $req->date;
-        $game_balance_model = GameBalance::where('delete_flg',0)->where('store',$store)->where('date',$date)->first();
+        $group_id = $req->group_id;
+        $game_balance_model = GameBalance::where('delete_flg',0)->where('store',$store)->where('group_id',$group_id)->orderBy('id', 'desc')->first();
         if($game_balance_model){
             $game_balance_model->recharged = $recharged_balance;
             $game_balance_model->save();
-
         }
 
         $resp = [

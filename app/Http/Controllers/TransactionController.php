@@ -274,7 +274,7 @@ class TransactionController extends Controller
             if($req->filter == 'latest'){
                 $transactions = Transaction::where('delete_flg',0)->orderBy('id','desc')->take(10)->get();
                 if($userModel->user_role !='1'){
-                    $transactions = Transaction::where('delete_flg',0)->where('group_id',$req->group_id)->orderBy('id','desc')->take(10)->get();
+                    $transactions = Transaction::where('delete_flg',0)->where('date',$req->date)->where('group_id',$userModel->group_id)->orderBy('id','desc')->take(10)->get();
                 }
             }
         }

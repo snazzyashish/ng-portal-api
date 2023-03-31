@@ -60,10 +60,11 @@ class GameBalanceController extends Controller
         $yesterday = Carbon::yesterday()->toDateString();
         DB::update("
             UPDATE game_balances t,
-            ( SELECT DISTINCT store,today_ending_balance FROM game_balances WHERE date =  '{$yesterday}') t1 
+            ( SELECT DISTINCT store,today_ending_balance FROM game_balances WHERE date =  '{$prev_date}') t1 
             SET t.prev_ending_balance = t1.today_ending_balance , t.total_income = (t.prev_ending_balance - t.today_ending_balance)
             WHERE
             t.store = t1.store
+            AND group_id = {$req->group_id}
             AND t.date = '{$req->date}'
         "
         );
@@ -173,7 +174,8 @@ class GameBalanceController extends Controller
     public function listPrev(Request $req){
         $today = date('Y-m-d');
         $sql_where = '';
-        $yesterday = Carbon::yesterday()->toDateString();;
+        $yesterday = Carbon::yesterday()->toDateString();
+        $userModel = User::where('delete_flg',0)->where('id',$req->user_id)->first();
 
         //query params
         // if($req->date){
@@ -235,9 +237,25 @@ class GameBalanceController extends Controller
         }
 
 
+       $sql = " delete_flg = 0 ";
+       if($req->group_id){
+            $sql.= " AND group_id = {$req->group_id} " ;
+       }
+       $sql.=" AND date='{$req->date}' ";
+
+        $total = DB::select(" SELECT
+            sum(prev_ending_balance) as total
+            FROM
+                `game_balances`
+            WHERE
+            {$sql}
+        "
+        );
+
         return response()->json([
             'success' => true,
             'data' => $results,
+            'total' => $total[0]
         ]);
     }
 
