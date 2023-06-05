@@ -24,7 +24,7 @@ class Controller extends BaseController
             return parent::callAction($method, $parameters);
         }else{
             //if no session found
-            abort(440,'Login Session Expired. Please re-login!'); 
+            // abort(440,'Login Session Expired. Please re-login!'); 
         }
     }
 }

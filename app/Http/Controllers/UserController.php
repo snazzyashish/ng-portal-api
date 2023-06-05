@@ -390,7 +390,7 @@ class UserController extends Controller
     }
 
     public function delete(Request $req){
-        $user = User::where('delete_flg',0)->where('id',$this->user_info->id)->first();
+        $user = User::where('delete_flg',0)->where('id',$req->id)->first();
         if(!$user){
             return response()->json([
                 'success' => false,

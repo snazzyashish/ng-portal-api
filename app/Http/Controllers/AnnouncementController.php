@@ -106,7 +106,8 @@ class AnnouncementController extends Controller
             }else{
                 $sql_where.= " WHERE ";
             }
-            $sql_where.= $req->group_ids. ' IN (group_ids)';
+            // $sql_where.= $req->group_ids. ' IN (group_ids)';
+            $sql_where.= " FIND_IN_SET({$req->group_ids}, group_ids) > 0 ";
         }
         if($req->id){
             if($sql_where != ''){

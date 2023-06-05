@@ -17,6 +17,7 @@ class WalletAuditController extends Controller
     }
 
     public function save(Request $req){
+        $date = date('Y-m-d h:i:s');
         $modifiedRecords = $req->modifiedRecords;
         $newRecords = $req->newRecords;
         $saved = null;
@@ -24,10 +25,14 @@ class WalletAuditController extends Controller
         foreach($modifiedRecords as $value){
             foreach($value as $key => $val ){
                 $model = WalletAudit::where('delete_flg',0)->where('id',$value['id'])->first();
-                if($key!='total_behoof'){
-                    $model->$key = $val;
+                if($model){
+                    if($key!='total_behoof'){
+                        $model->$key = $val;
+                    }
+                    $model->updated_by = $req->user_id;
+                    $model->updated_at = $date;
+                    $saved = $model->save();
                 }
-                $saved = $model->save();
             }
         }
 
@@ -37,6 +42,8 @@ class WalletAuditController extends Controller
                 $columns = ['id','delete_flg','is_draft','total_behoof'];
                 if(!in_array($key, $columns)){
                     $model->$key = $val;
+                    $model->created_by = $req->user_id;
+                    $model->created_at = $date;
                     $saved = $model->save();
                 }
             }
@@ -183,6 +190,7 @@ class WalletAuditController extends Controller
     }
 
     public function delete(Request $req){
+        $date = date('Y-m-d h:i:s');
         $deletedRecords = $req->deletedRecords;
         $saved = null;
 
@@ -193,8 +201,12 @@ class WalletAuditController extends Controller
 
         foreach($deletedRecords as $value){
             $model = WalletAudit::where('delete_flg',0)->where('id',$value)->first();
-            $model->delete_flg = 1;
-            $saved = $model->save();
+            if($model){
+                $model->delete_flg = 1;
+                $model->deleted_by = $req->user_id;
+                $model->deleted_at = $date;
+                $saved = $model->save();
+            }
         }
     
         if($saved){

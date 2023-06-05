@@ -71,6 +71,7 @@ Route::post('/transaction/delete', [TransactionController::class, 'delete']);
 Route::post('/transaction/recover', [TransactionController::class, 'recover']);
 Route::post('/transaction/permanentDelete', [TransactionController::class, 'permanentDelete']);
 Route::post('/transaction/group-summary', [TransactionController::class, 'getGroupTransactionSummary']);
+Route::post('/transaction/update-social-link', [TransactionController::class, 'updateSocialLink']);
 
 Route::get('/schedule/list', [ScheduleController::class, 'list']);
 Route::post('/schedule/save', [ScheduleController::class, 'save']);
@@ -111,6 +112,7 @@ Route::post('/vpn-cred/save', [VpnCredentialController::class, 'save']);
 Route::post('/vpn-cred/delete', [VpnCredentialController::class, 'delete']);
 
 Route::get('/report/list', [ReportController::class, 'list']);
+Route::get('/income-report/list', [ReportController::class, 'listIncome']);
 
 Route::get('/store-recharge/list', [StoreBalanceController::class, 'list']);
 Route::post('/store-recharge/save', [StoreBalanceController::class, 'save']);

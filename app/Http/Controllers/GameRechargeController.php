@@ -88,7 +88,7 @@ class GameRechargeController extends Controller
         foreach($modifiedRecords as $value){
             $model = GameRecharge::where('delete_flg',0)->where('id',$value['id'])->first();
             foreach($value as $key => $val ){
-                $columns = ['id','delete_flg','is_draft','modified'];
+                    $columns = ['id','delete_flg','is_draft','modified'];
                 if(!in_array($key, $columns)){
                     $model->$key = $val;
                     $saved = $model->save();
@@ -111,7 +111,7 @@ class GameRechargeController extends Controller
         $recharged_balance = $model->balance;
         $date = $req->date;
         $group_id = $req->group_id;
-        $game_balance_model = GameBalance::where('delete_flg',0)->where('store',$store)->where('group_id',$group_id)->orderBy('id', 'desc')->first();
+        $game_balance_model = GameBalance::where('delete_flg',0)->where('date',$date)->where('store',$store)->where('group_id',$group_id)->orderBy('id', 'desc')->first();
         if($game_balance_model){
             $game_balance_model->recharged = $recharged_balance;
             $game_balance_model->save();
@@ -219,7 +219,19 @@ class GameRechargeController extends Controller
             $model = GameRecharge::where('delete_flg',0)->where('id',$value)->first();
             $model->delete_flg = 1;
             $saved = $model->save();
+
+            $store = $model->store;
+            $recharged_balance = $model->balance;
+            $date = $req->date;
+            $group_id = $req->group_id;
+    
+            $game_balance_model = GameBalance::where('delete_flg',0)->where('date',$req->date)->where('store',$store)->where('group_id',$group_id)->orderBy('id', 'desc')->first();
+            if($game_balance_model){
+                $game_balance_model->recharged = 0;
+                $game_balance_model->save();
+            }
         }
+
     
         if($saved){
             return response()->json([

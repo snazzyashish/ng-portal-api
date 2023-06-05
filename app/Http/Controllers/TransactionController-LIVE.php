@@ -91,6 +91,47 @@ class TransactionController extends Controller
         }
     }
 
+    public function updateSocialLink(Request $req){
+        $date = date('Y-m-d h:i:s');
+        $day = date('D', strtotime($date));
+
+        $modifiedRecords = $req->modifiedRecords;
+        $newRecords = $req->newRecords;
+        $saved = null;
+
+        foreach($modifiedRecords as $value){
+            foreach($value as $key => $val ){
+                $model = Transaction::where('delete_flg',0)->where('id',$value['id'])->first();
+                $model->$key = $val;
+                if($key == 'facebook_url'){
+                    $updateSocialLink = DB::update('UPDATE transactions set facebook_url = ?  WHERE player_name = ? AND group_id = ?',  [$value['facebook_url'], $value['player_name'], $value['group_id']]);
+                }
+                $model->updated_at = $date;
+                // $model->updated_by = $req->user_id;
+                $model->is_draft = 0;
+                if($key == 'date'){
+                    $date = date($val);
+                    $day = date('D', strtotime($date));
+                    $model->day = $day;
+                }
+                $saved = $model->save();
+            }
+        }
+
+        $resp = [
+            'success' => false,
+            'message' => 'Social Link Update Failed',
+        ];
+
+        if($saved){
+            return response()->json([
+                'success' => true,
+                'message' => 'Social Link Update Success',
+                // 'model' => $model
+            ]);
+        }
+    }
+
     // public function save(Request $req){
     //     $date = date('Y-m-d h:i:s');
 
@@ -272,7 +313,7 @@ class TransactionController extends Controller
             if($req->filter == 'latest'){
                 $transactions = Transaction::where('delete_flg',0)->orderBy('id','desc')->take(10)->get();
                 if($this->user_info->user_role !='1'){
-                    $transactions = Transaction::where('delete_flg',0)->where('group_id',$this->user_info->group_id)->orderBy('id','desc')->take(10)->get();
+                    $transactions = Transaction::where('delete_flg',0)->where('date',$req->date)->where('group_id',$this->user_info->group_id)->orderBy('id','desc')->take(10)->get();
                 }
             }
         }
@@ -399,6 +440,11 @@ class TransactionController extends Controller
                 if($this->user_info->group_id){
                     $sql_where = " AND group_id IN({$this->user_info->group_id}) ";
                 }
+                
+                if($req->date){
+                    $today = $req->date;
+                }
+
                 // $records = DB::select('select IFNULL(sum(c_in),0) as c_in, IFNULL(sum(c_out),0) as c_out,	IFNULL(sum(c_in),0)-IFNULL(sum(c_out),0) as behoof, group_name  from transactions WHERE delete_flg=0 AND is_draft=0 AND date = "'.$today.'"  GROUP BY date, group_name');
 
                 $records = DB::select("select IFNULL(sum(c_in),0) as c_in, IFNULL(sum(c_out),0) as c_out,	IFNULL(sum(c_in),0)-IFNULL(sum(c_out),0) as behoof, group_name  from transactions WHERE delete_flg=0 AND is_draft=0 {$sql_where} AND date = '".$today."'  GROUP BY date, group_name");
