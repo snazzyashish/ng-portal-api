@@ -49,6 +49,7 @@ Route::post('/save-user-profile', [UserController::class, 'saveUserProfile']);
 Route::post('/save-user-security', [UserController::class, 'saveUserSecurity']);
 Route::post('/upload-file', [UserController::class, 'uploadFile']);
 Route::get('/user/list', [UserController::class, 'list']);
+Route::get('/user/group-users', [UserController::class, 'groupUsers']);
 Route::post('/user/save', [UserController::class, 'save']);
 Route::post('/user/check-user', [UserController::class, 'checkUser']);
 Route::post('/user/reset-password', [UserController::class, 'resetPassword']);

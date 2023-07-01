@@ -291,6 +291,9 @@ class UserController extends Controller
             $sql_where.= ' user_role = '.$req->userRole;
         }
 
+      
+
+
         if($userModel->group_id){
             if($sql_where != ''){
                 $sql_where.= " AND";
@@ -340,6 +343,80 @@ class UserController extends Controller
             'totalPages' => $totalPages
         ]);
     }
+
+    public function groupUsers(Request $req){
+        $perPage = 10;  
+        $offset = 0;
+
+        $sql_where = '';
+        $userModel = User::where('delete_flg',0)->where('id',$req->user_id)->first();
+
+
+        //query params
+       
+        if($req->userRole){
+            if($sql_where != ''){
+                $sql_where.= " AND";
+            }else{
+                $sql_where.= " WHERE";
+            }
+            $sql_where.= ' user_role = '.$req->userRole;
+        }
+
+        if($req->group_id){
+            if($sql_where != ''){
+                $sql_where.= " AND";
+            }else{
+                $sql_where.= " WHERE";
+            }
+            $sql_where.= ' group_id = '.$req->group_id;
+        }
+
+
+        //for total records without pagination/limit
+        if($sql_where!=''){
+            $totalRecords = sizeOf(DB::select('select * from users '.$sql_where.''));
+        }else{
+            $totalRecords = User::where('delete_flg',0)->orderBy('id', 'desc')->count();
+        }
+
+        //check delete_flg
+        if($sql_where == ''){
+            $sql_where.='  WHERE delete_flg = 0';
+        }else{
+            $sql_where.=' AND delete_flg = 0';
+        }
+
+        //pagination
+        if($req->currentPage){
+            if($req->currentPage > 1){
+                $offset = ($req->currentPage * $perPage) - ($perPage);
+            }
+            $sql_where.= ' ORDER BY ID DESC ';
+            $sql_where.= ' LIMIT '.$perPage.' OFFSET '.$offset;
+           
+        }
+
+        
+        if($sql_where !=''){
+            $users = DB::select('select * from users '.$sql_where.'');
+        }else{
+            $users = User::where('delete_flg',0)->orderBy('id', 'desc')->get();
+        }
+
+
+        $totalPages =  ceil($totalRecords / $perPage);
+
+        return response()->json([
+            'success' => true,
+            'data' => $users,
+            'totalRecords' => $totalRecords,
+            'totalPages' => $totalPages
+        ]);
+    }
+
+
+
 
     public function checkUser(Request $req){
         $user = User::where('delete_flg',0)->where('username',$req->username)->first();
