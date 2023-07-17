@@ -72,7 +72,7 @@ class MyIncomeController extends Controller
         $model->customer_acquistion_rate = $req->input('customer_acquistion_rate');
         $model->response_rate = $req->input('response_rate');
         $model->response_to_customer = $req->input('response_to_customer');
-        // $model->estimated_income = $req->input('estimated_income');
+        $model->estimated_income = $req->input('estimated_income');
         $model->delete_flg = 0;
         $model->is_draft = 0;
         $model->created_at = $date;
