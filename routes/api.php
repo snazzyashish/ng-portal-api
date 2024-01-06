@@ -53,6 +53,7 @@ Route::get('/user/list', [UserController::class, 'list']);
 Route::get('/user/group-users', [UserController::class, 'groupUsers']);
 Route::post('/user/save', [UserController::class, 'save']);
 Route::post('/user/check-user', [UserController::class, 'checkUser']);
+Route::post('/user/verify-otp', [UserController::class, 'verifyOtp']);
 Route::post('/user/reset-password', [UserController::class, 'resetPassword']);
 Route::post('/user/delete', [UserController::class, 'delete']);
 

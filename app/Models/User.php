@@ -36,6 +36,7 @@ class User extends Authenticatable implements JWTSubject
         'password',
         'group_code',
         'remember_token',
+        'current_otp'
         // 'group_id'
     ];
     public $timestamps = false;

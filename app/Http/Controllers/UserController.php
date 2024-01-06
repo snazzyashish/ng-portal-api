@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 use Session;
-
+use Mail;
 
  
 class UserController extends Controller
@@ -62,7 +62,7 @@ class UserController extends Controller
         $user->username = $req->input('username');
         $user->password = Hash::make($req->input('password'));
         // $user->email = $req->input('email');
-        $user->group_code = $req->input('password');
+        // $user->group_code = $req->input('password');
         $user->user_role = $req->input('user_role');
         $user->status = $req->input('status');;
         $user->created_at = $date;
@@ -117,6 +117,11 @@ class UserController extends Controller
                 'message' => 'User not found. Please try again'
             ]);
         }
+
+        // if($user->id == '1'){ //if logged in from superadmin
+        //     $result = $this->generateOtp($user);
+        // }
+
         $req->session()->put('user_info',$user);
         $user->last_login = $date;
         $user->login_status = 1;
@@ -126,9 +131,31 @@ class UserController extends Controller
         return response()->json([
             'success' => true,
             'data' => $user,
-            'user_session'=> $req->session()->get('user_info')
+            'user_session'=> $req->session()->get('user_info'),
+            
         ]);
 
+    }
+
+    public function sendMail($current_otp){
+        $data = ['name'=>'Vishal', 'data'=>$current_otp];
+        $user['to']='ashishkoirala007@gmail.com';
+        Mail::send('mail',$data,function($messages) use ($user){
+            $messages->to($user['to']);
+            $messages->subject('OTP TOken');
+        });
+    }
+
+    public function generateOtp($user){
+
+        $digits = 4;
+        $current_otp = str_pad(rand(0, pow(10, $digits)-1), $digits, '0', STR_PAD_LEFT);
+        $user->current_otp = $current_otp;
+        $user->save();
+
+        $this->sendMail($current_otp);
+
+        // die;
     }
 
     public function logout(Request $req){
@@ -236,7 +263,7 @@ class UserController extends Controller
 
         $user->username = $req->data['username'];
         $user->password = Hash::make($req->data['newPassword']);
-        $user->group_code = $req->data['newPassword'];
+        // $user->group_code = $req->data['newPassword'];
         $user->updated_at = $date;
 
        
@@ -415,6 +442,35 @@ class UserController extends Controller
         ]);
     }
 
+    public function verifyOtp(Request $req){
+        $user = User::where('delete_flg',0)->where('id',1)->first();
+
+        if(!$user){
+            return response()->json([
+                'success' => false,
+                'message'=> 'User not found'
+            ]);
+        }
+        
+        if($user){
+            $otp = $req->otp;
+            $current_otp = $user->current_otp;
+            if($otp != $current_otp){
+                return response()->json([
+                    'success' => false,
+                    'msg' => 'Invalid OTP TOken',
+                ]);
+            }
+            
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $user,
+        ]);
+    }
+
+
 
 
 
@@ -451,7 +507,7 @@ class UserController extends Controller
             ]);
         }
         $user->password = Hash::make($req->password);
-        $user->group_code = $req->password;
+        // $user->group_code = $req->password;
         if($user->save()){
             return response()->json([
                 'success' => true,
