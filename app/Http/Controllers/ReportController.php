@@ -178,6 +178,110 @@ class ReportController extends Controller
         ]);
     }
 
+    public function listStoreRecharge(Request $req){
+        $sql_where = '';
+
+        //query params
+        if($req->date && $req->toDate){
+            $date = "'".$req->date."'";
+            $toDate = "'".$req->toDate."'";
+            $sql_where.= "  WHERE t1.date BETWEEN".$date."AND".$toDate;
+        }else if($req->date){
+            $date = "'".$req->date."'";
+            $sql_where.= "  WHERE t1.date = ".$date;
+        }
+
+
+      
+
+
+
+        if($req->group_id){
+            // if($req->user_id != 1){
+                if($sql_where != ''){
+                    $sql_where.= " AND";
+                }else{
+                    $sql_where.= " WHERE";
+                }
+                $sql_where.= ' t1.group_id = '.$req->group_id;
+            // }
+        }
+
+        $summary = DB::select('SELECT
+        TRUNCATE(IFNULL( sum( t1.balance ), 0 ),2) as total_recharged
+        FROM
+        game_recharges as t1'.$sql_where.' AND delete_flg = 0'
+        );
+
+        if($req->month){
+            if($sql_where != ''){
+                $sql_where.= " AND";
+            }else{
+                $sql_where.= " WHERE";
+            }
+            $sql_where.= ' MONTH(date) = '.$req->month;
+        }
+
+       
+
+        //check delete_flg
+        if($sql_where == ''){
+            $sql_where.='  WHERE t1.delete_flg = 0 ';
+        }else{
+            $sql_where.=' AND t1.delete_flg = 0 ';
+        }
+
+        
+        if($req->group_id){ //single group is selected
+            $records = DB::select('SELECT
+            t1.date,
+            t1.store, 
+            t2.name as group_name,
+            IFNULL(SUM(t1.balance),0) as balance
+            FROM
+            `game_recharges` as t1 
+            INNER JOIN `groups` as t2 ON t1.group_id = t2.id'.$sql_where.' 
+            GROUP BY
+            date,
+            store, 
+            name
+            ');
+        }else{ //all group
+            $records = DB::select('SELECT
+            t1.date,
+            t1.store, 
+            t2.name as group_name,
+            IFNULL(SUM(t1.balance),0) as balance
+            FROM
+            `game_recharges` as t1 
+            INNER JOIN `groups` as t2 ON t1.group_id = t2.id'.$sql_where.' 
+            GROUP BY
+            t1.date,
+                t1.store,
+                t2.name
+                 ');
+        }
+
+       
+
+        $totalRecords = sizeof($records);
+
+        // $summary = DB::select('SELECT TRUNCATE
+        //             ( IFNULL( sum( recharged ), 0 ), 2 ) AS recharged,
+        //             TRUNCATE ( IFNULL( sum( prev_ending_balance ), 0 ), 2 ) AS yesterday_balance,
+        //             TRUNCATE (
+        //             IFNULL( sum( prev_ending_balance ), 0 ) - IFNULL( sum( today_ending_balance), 0 ) + IFNULL( sum( recharged ), 0 ), 2 ) AS total_income FROM game_balances as t1'.$sql_where.''
+        // );
+       
+      
+
+        return response()->json([
+            'success' => true,
+            'data' => $records,
+            'summary' => $summary
+        ]);
+    }
+
     /**
      * Show the profile for a given user.
      *

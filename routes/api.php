@@ -116,6 +116,7 @@ Route::post('/vpn-cred/delete', [VpnCredentialController::class, 'delete']);
 
 Route::get('/report/list', [ReportController::class, 'list']);
 Route::get('/income-report/list', [ReportController::class, 'listIncome']);
+Route::get('/recharge-report/list', [ReportController::class, 'listStoreRecharge']);
 
 Route::get('/store-recharge/list', [StoreBalanceController::class, 'list']);
 Route::post('/store-recharge/save', [StoreBalanceController::class, 'save']);
