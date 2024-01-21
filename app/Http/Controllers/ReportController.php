@@ -248,18 +248,12 @@ class ReportController extends Controller
             ');
         }else{ //all group
             $records = DB::select('SELECT
-            t1.date,
-            t1.store, 
-            t2.name as group_name,
+            store,
             IFNULL(SUM(t1.balance),0) as balance
             FROM
-            `game_recharges` as t1 
-            INNER JOIN `groups` as t2 ON t1.group_id = t2.id'.$sql_where.' 
+            `game_recharges` as t1 '.$sql_where.' 
             GROUP BY
-            t1.date,
-                t1.store,
-                t2.name
-                 ');
+            t1.store');
         }
 
        
