@@ -424,11 +424,12 @@ class TransactionController extends Controller
         if($req->filter){
             if($req->filter == 'month'){
                 $currentMonth = date('m');
+                $currentYear = date('Y');
                 if($req->group_id){
                     $sql_where = " AND group_id IN({$req->group_id}) ";
                 }
 
-                $records = DB::select("select IFNULL(sum(c_in),0) as c_in, IFNULL(sum(c_out),0) as c_out,	IFNULL(sum(c_in),0)-IFNULL(sum(c_out),0) as behoof, group_name  from transactions WHERE MONTH(date) = {$currentMonth} AND delete_flg=0 AND is_draft=0 {$sql_where} GROUP BY  group_name");
+                $records = DB::select("select IFNULL(sum(c_in),0) as c_in, IFNULL(sum(c_out),0) as c_out,	IFNULL(sum(c_in),0)-IFNULL(sum(c_out),0) as behoof, group_name  from transactions WHERE MONTH(date) = {$currentMonth} AND YEAR(date) = {$currentYear} AND delete_flg=0 AND is_draft=0 {$sql_where} GROUP BY  group_name");
                 
                 
             }else if($req->filter == 'week'){
